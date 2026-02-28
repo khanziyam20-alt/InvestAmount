@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SkyWallet Pro - Ultimate</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --bg: #070b14; --glass: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6; --accent: #00f2fe; --success: #10b981;
+            --danger: #ef4444; --text: #f1f5f9;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top right, #1e293b, var(--bg)); 
+            color: var(--text); margin: 0; min-height: 100vh; padding-bottom: 50px;
+        }
+        .hidden { display: none !important; }
+        .container { max-width: 480px; margin: auto; padding: 20px; }
+
+        /* Card Styles */
+        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
+        .wallet-card { background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 30px 20px; border-radius: 28px; text-align: center; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); }
+
+        /* UI Elements */
+        input { width: 100%; padding: 14px; border-radius: 14px; background: rgba(0,0,0,0.3); border: 1px solid #334155; color: white; margin-bottom: 15px; outline: none; }
+        .btn { width: 100%; padding: 15px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-withdraw { background: rgba(255,255,255,0.2); color: white; margin-top: 10px; }
+        
+        /* Plan Cards */
+        .plan-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
+        .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; background: var(--success); }
+
+        /* Admin Section */
+        .admin-box { border: 2px solid var(--danger); }
+        .req-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid #ef4444; }
+
+        /* Overlay */
+        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 1000; padding: 20px; display:none; overflow-y: auto;}
+    </style>
+</head>
+<body>
+
+<div id="loginSection" class="container" style="text-align:center; padding-top: 100px;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 10px;">SkyWallet</h1>
+    <p style="color:var(--accent)">Advanced Investment Platform</p>
+    <div class="glass-card" style="margin-top: 50px;">
+        <button class="btn btn-primary" onclick="login()">Login with Google</button>
+    </div>
+</div>
+
+<div id="appSection" class="container hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <span id="uName">User</span>
+        <button onclick="logout()" style="background:none; border:none; color:var(--danger); cursor:pointer;">Logout</button>
+    </div>
+
+    <div class="wallet-card">
+        <p style="font-size:0.8rem; opacity:0.8; letter-spacing:1px;">TOTAL BALANCE</p>
+        <h1 id="balanceDisplay" style="font-size:2.8rem; margin:10px 0;">₹0</h1>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <button class="btn btn-withdraw" onclick="requestTx('Deposit')">Deposit</button>
+            <button class="btn btn-withdraw" onclick="requestTx('Withdraw')">Withdraw</button>
+        </div>
+    </div>
+
+    <div class="glass-card" style="margin-top:20px;">
+        <label style="font-size:0.8rem; color:gray">Investment Amount (₹)</label>
+        <input type="number" id="investAmt" value="1000">
+        <label style="font-size:0.8rem; color:gray">Start Date</label>
+        <input type="date" id="startDate">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+            <button class="btn btn-primary" onclick="buyPlan(6, 0.2)">6 Days<br><small>+20% Return</small></button>
+            <button class="btn btn-primary" onclick="buyPlan(30, 0.5)" style="background:#8b5cf6">30 Days<br><small>+50% Return</small></button>
+        </div>
+    </div>
+
+    <h3>Active Portfolio</h3>
+    <div id="planList"></div>
+
+    <div id="adminPanel" class="glass-card admin-box hidden">
+        <h3 style="color:var(--danger); margin-top:0;">ADMIN DASHBOARD</h3>
+        <div id="adminRequests">No pending requests</div>
+    </div>
+</div>
+
+<div id="overlay">
+    <button class="btn btn-withdraw" style="width:auto; margin-bottom:20px;" onclick="closeOverlay()">← Back</button>
+    <h2 id="viewPlanTitle">Plan Details</h2>
+    <div id="emiTable"></div>
+</div>
+
+<script>
+    // --- FIREBASE CONFIGURATION ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyB08YgLPpftxwvlKQQ9D4dRCEn4QXk-fks",
+        authDomain: "investamount-2d60a.firebaseapp.com",
+        projectId: "investamount-2d60a",
+        storageBucket: "investamount-2d60a.firebasestorage.app",
+        messagingSenderId: "1680550862",
+        appId: "1:1680550862:web:5218a3fc4c1ba814cc599f",
+        measurementId: "G-FSZHVME0YB"
+    };
+
+    const adminEmail = "onlinetechcenter786@gmail.com";
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let userData = null;
+    document.getElementById('startDate').valueAsDate = new Date();
+
+    // --- AUTH FUNCTIONS ---
+    function login() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider);
+    }
+    function logout() { auth.signOut(); location.reload(); }
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('appSection').classList.remove('hidden');
+            document.getElementById('uName').innerText = "Namaste, " + user.displayName.split(' ')[0];
+            syncData(user);
+            if(user.email === adminEmail) {
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadAdminData();
+            }
+        }
+    });
+
+    // --- USER DATA SYNC ---
+    function syncData(user) {
+        db.collection('users').doc(user.uid).onSnapshot(doc => {
+            if(!doc.exists()) {
+                db.collection('users').doc(user.uid).set({
+                    balance: 5000,
+                    email: user.email,
+                    plans: [],
+                    withdrawPending: false
+                });
+            } else {
+                userData = doc.data();
+                document.getElementById('balanceDisplay').innerText = `₹${userData.balance.toLocaleString()}`;
+                renderPlans();
+            }
+        });
+    }
+
+    // --- INVESTMENT LOGIC ---
+    async function buyPlan(days, rate) {
+        let amt = parseInt(document.getElementById('investAmt').value);
+        if(amt > userData.balance) return alert("Paisa kam hai!");
+        
+        let start = new Date(document.getElementById('startDate').value);
+        let daily = Math.round((amt + (amt * rate)) / days);
+        
+        let newPlan = {
+            id: Date.now(),
+            invested: amt,
+            duration: days,
+            daily: daily,
+            installments: []
+        };
+
+        let tempDate = new Date(start);
+        for(let i=1; i<=days; i++) {
+            if(tempDate.getDay() === 1) tempDate.setDate(tempDate.getDate() + 1); // Mon Off
+            newPlan.installments.push({
+                id: i,
+                date: new Date(tempDate).toLocaleDateString('hi-IN', {day:'2-digit', month:'short'}),
+                dayName: tempDate.toLocaleDateString('en-GB', {weekday:'short'}),
+                paid: false
+            });
+            tempDate.setDate(tempDate.getDate() + 1);
+        }
+
+        let updatedPlans = [newPlan, ...userData.plans];
+        await db.collection('users').doc(auth.currentUser.uid).update({
+            balance: userData.balance - amt,
+            plans: updatedPlans
+        });
+    }
+
+    function renderPlans() {
+        const list = document.getElementById('planList');
+        list.innerHTML = '';
+        userData.plans.forEach(plan => {
+            list.innerHTML += `
+                <div class="plan-item">
+                    <div>
+                        <b>₹${plan.invested} Plan</b><br>
+                        <small style="color:gray">${plan.duration} Days Daily</small>
+                    </div>
+                    <button class="btn btn-primary" style="width:auto; padding:8px 15px;" onclick="viewPlan(${plan.id})">View</button>
+                </div>`;
+        });
+    }
+
+    function viewPlan(id) {
+        const plan = userData.plans.find(p => p.id === id);
+        document.getElementById('overlay').style.display = 'block';
+        let html = `<h3>Daily Return: ₹${plan.daily}</h3><table style="width:100%; text-align:left;">`;
+        plan.installments.forEach(ins => {
+            html += `
+            <tr style="border-bottom:1px solid #333">
+                <td style="padding:10px">${ins.date} (${ins.dayName})</td>
+                <td>₹${plan.daily}</td>
+                <td>${ins.paid ? '✅' : `<button onclick="collect(${plan.id}, ${ins.id})">Collect</button>`}</td>
+            </tr>`;
+        });
+        document.getElementById('emiTable').innerHTML = html + "</table>";
+    }
+
+    async function collect(pId, iId) {
+        let plans = [...userData.plans];
+        let p = plans.find(x => x.id === pId);
+        let i = p.installments.find(y => y.id === iId);
+        if(i.paid) return;
+        i.paid = true;
+        await db.collection('users').doc(auth.currentUser.uid).update({
+            balance: userData.balance + p.daily,
+            plans: plans
+        });
+        viewPlan(pId);
+    }
+
+    // --- REQUESTS (DEPOSIT/WITHDRAW) ---
+    async function requestTx(type) {
+        if(type === 'Withdraw' && userData.withdrawPending) return alert("Ek request pehle se pending hai!");
+        let amt = prompt(`${type} Amount?`);
+        if(!amt || amt <= 0) return;
+
+        await db.collection('requests').add({
+            uid: auth.currentUser.uid,
+            email: auth.currentUser.email,
+            amount: parseInt(amt),
+            type: type,
+            status: 'pending',
+            time: Date.now()
+        });
+
+        if(type === 'Withdraw') {
+            await db.collection('users').doc(auth.currentUser.uid).update({ withdrawPending: true });
+        }
+        alert("Request Sent to Admin!");
+    }
+
+    // --- ADMIN LOGIC ---
+    function loadAdminData() {
+        db.collection('requests').where('status', '==', 'pending').onSnapshot(snap => {
+            let html = "";
+            snap.forEach(doc => {
+                let r = doc.data();
+                html += `<div class="req-card">
+                    <p>${r.email}<br><b>${r.type}: ₹${r.amount}</b></p>
+                    <button class="btn btn-primary" style="width:45%; background:var(--success)" onclick="approve('${doc.id}', '${r.uid}', ${r.amount}, '${r.type}')">Approve</button>
+                    <button class="btn btn-primary" style="width:45%; background:var(--danger)" onclick="reject('${doc.id}', '${r.uid}')">Reject</button>
+                </div>`;
+            });
+            document.getElementById('adminRequests').innerHTML = html || "No pending requests.";
+        });
+    }
+
+    async function approve(rid, uid, amt, type) {
+        if(type === 'Deposit') {
+            await db.collection('users').doc(uid).update({
+                balance: firebase.firestore.FieldValue.increment(amt)
+            });
+        } else {
+            await db.collection('users').doc(uid).update({
+                balance: firebase.firestore.FieldValue.increment(-amt),
+                withdrawPending: false
+            });
+        }
+        await db.collection('requests').doc(rid).update({ status: 'approved' });
+    }
+
+    async function reject(rid, uid) {
+        await db.collection('requests').doc(rid).update({ status: 'rejected' });
+        await db.collection('users').doc(uid).update({ withdrawPending: false });
+    }
+
+    function closeOverlay() { document.getElementById('overlay').style.display = 'none'; }
+</script>
+</body>
+</html>
