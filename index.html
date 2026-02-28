@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SkyWallet Pro - Premium</title>
+    <title>SkyWallet - Apne Paiso Ko Kaam Par Lagaye</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
@@ -12,42 +12,37 @@
     <style>
         :root {
             --bg: #0b0f19; --glass: rgba(255, 255, 255, 0.05);
-            --primary: #4f46e5; --accent: #22d3ee; --success: #10b981;
-            --danger: #f43f5e; --text: #f8fafc;
+            --primary: #4f46e5; --accent: #22d3ee; --text: #f8fafc;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
             font-family: 'Inter', system-ui, sans-serif; background: var(--bg); 
-            color: var(--text); margin: 0; min-height: 100vh; overflow-x: hidden;
+            color: var(--text); margin: 0; min-height: 100vh;
         }
         .hidden { display: none !important; }
 
-        /* Full Screen Login Page */
+        /* Login Screen */
         #loginSection {
-            height: 100vh; width: 100%; display: flex; flex-direction: column;
+            height: 100vh; display: flex; flex-direction: column;
             justify-content: center; align-items: center; text-align: center;
             background: radial-gradient(circle at top right, #1e1b4b, #0b0f19);
-            padding: 30px; position: fixed; top: 0; left: 0; z-index: 2000;
+            padding: 20px;
         }
-        .logo-box { font-size: 3.5rem; font-weight: 900; background: linear-gradient(to bottom, #fff, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
-        .tagline { font-size: 1.1rem; color: #94a3b8; margin-bottom: 40px; font-weight: 300; letter-spacing: 1px; }
-        .login-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 40px 20px; border-radius: 30px; width: 100%; max-width: 350px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .logo-box { font-size: 3.5rem; font-weight: 900; background: linear-gradient(to bottom, #fff, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .tagline { font-size: 1.1rem; color: #94a3b8; margin: 10px 0 40px; }
+        .login-card { background: var(--glass); backdrop-filter: blur(20px); padding: 40px 20px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 350px; }
+        
+        .btn-google { 
+            background: white; color: black; border-radius: 15px; border: none;
+            padding: 15px; font-weight: bold; width: 100%; display: flex;
+            align-items: center; justify-content: center; gap: 10px; cursor: pointer;
+        }
 
-        /* Buttons */
-        .btn { width: 100%; padding: 16px; border-radius: 18px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 1rem; }
-        .btn-google { background: white; color: #000; display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
-        .btn:active { transform: scale(0.96); }
-
-        /* Dashboard UI */
+        /* Dashboard */
         .container { max-width: 480px; margin: auto; padding: 15px; }
-        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; }
-        .wallet-card { background: linear-gradient(135deg, #4f46e5, #9333ea); padding: 30px 20px; border-radius: 28px; text-align: center; box-shadow: 0 15px 35px rgba(79, 70, 229, 0.4); }
-        
-        input { width: 100%; padding: 15px; border-radius: 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 15px; font-size: 1rem; }
-        
-        .req-card { background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.2); padding: 15px; border-radius: 18px; margin-top: 10px; }
-        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 1500; padding: 20px; display:none; overflow-y: auto; }
+        .wallet-card { background: linear-gradient(135deg, #4f46e5, #9333ea); padding: 30px 20px; border-radius: 25px; text-align: center; margin-top: 20px; }
+        .glass-card { background: var(--glass); border-radius: 20px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); margin-top: 20px; }
+        .btn-action { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -56,8 +51,8 @@
     <div class="logo-box">SkyWallet</div>
     <div class="tagline">Apne paiso ko kaam par lagaye</div>
     <div class="login-card">
-        <p style="margin-bottom:25px; font-size: 0.9rem; opacity: 0.7;">Surakshit investment ki shuruat karein</p>
-        <button id="googleBtn" class="btn btn-google" onclick="login()">
+        <p style="margin-bottom:20px; opacity: 0.8;">Surakshit investment ki shuruat karein</p>
+        <button class="btn-google" onclick="login()">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_google_symbol.svg" width="22" alt="G">
             Google se Login karein
         </button>
@@ -65,41 +60,28 @@
 </div>
 
 <div id="appSection" class="container hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 5px 20px;">
-        <span id="uName" style="font-weight: 700; font-size: 1.1rem;">User</span>
-        <button onclick="logout()" style="background:rgba(244,63,94,0.1); border:none; color:var(--danger); padding:8px 15px; border-radius:10px; font-weight:bold;">Logout</button>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="uName">User</h3>
+        <button onclick="logout()" style="color:#f43f5e; background:none; border:none; font-weight:bold;">Logout</button>
     </div>
 
     <div class="wallet-card">
-        <p style="font-size:0.75rem; opacity:0.8; letter-spacing:2px; font-weight:600;">AVAILABLE BALANCE</p>
-        <h1 id="balanceDisplay" style="font-size:3rem; margin:10px 0; font-weight:900;">₹0</h1>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:20px;">
-            <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:12px;" onclick="requestTx('Deposit')">Deposit</button>
-            <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:12px;" onclick="requestTx('Withdraw')">Withdraw</button>
+        <p style="font-size: 0.8rem; opacity: 0.8;">BALANCE</p>
+        <h1 id="balanceDisplay" style="font-size: 3rem; margin: 0;">₹0</h1>
+    </div>
+
+    <div class="glass-card">
+        <h4 style="margin-top:0;">Deposit & Withdraw</h4>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-action" onclick="reqTx('Deposit')">Deposit</button>
+            <button class="btn-action" onclick="reqTx('Withdraw')" style="background:rgba(255,255,255,0.1)">Withdraw</button>
         </div>
     </div>
 
-    <div class="glass-card" style="margin-top:25px;">
-        <label style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px; display:block;">INVESTMENT AMOUNT (₹)</label>
-        <input type="number" id="investAmt" value="1000">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
-            <button class="btn btn-primary" onclick="buyPlan(6, 0.2)">6 Din Plan<br><small>+20% Profit</small></button>
-            <button class="btn btn-primary" onclick="buyPlan(30, 0.5)" style="background:#7c3aed">30 Din Plan<br><small>+50% Profit</small></button>
-        </div>
+    <div id="adminPanel" class="glass-card hidden" style="border-color: #f43f5e;">
+        <h4 style="color:#f43f5e;">Admin Dashboard</h4>
+        <div id="adminRequests">Loading...</div>
     </div>
-
-    <h3 style="margin: 25px 5px 15px; font-size: 1.2rem;">Active Portfolio</h3>
-    <div id="planList"></div>
-
-    <div id="adminPanel" class="glass-card hidden" style="border: 1px solid rgba(244, 63, 94, 0.3);">
-        <span style="color:var(--danger); font-weight:800; font-size:0.8rem; text-transform:uppercase;">Admin Dashboard</span>
-        <div id="adminRequests" style="font-size:0.9rem; color:#94a3b8; margin-top:10px;">Loading requests...</div>
-    </div>
-</div>
-
-<div id="overlay">
-    <button class="btn" style="width:auto; margin-bottom:20px; background:#1e293b; color:white;" onclick="closeOverlay()">← Dashboard</button>
-    <div id="emiTable"></div>
 </div>
 
 <script>
@@ -114,14 +96,11 @@
     };
 
     const adminEmail = "onlinetechcenter786@gmail.com";
-
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let userData = null;
-
-    // --- FIX: Redirect Login Handling ---
+    // Login Fix for Mobile Loop
     function login() {
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithRedirect(provider);
@@ -129,91 +108,49 @@
 
     function logout() { auth.signOut().then(() => location.reload()); }
 
-    // Check Redirect Result & Auth State
-    auth.getRedirectResult().catch(err => console.error("Login Error:", err));
+    // Handle Auth Result
+    auth.getRedirectResult().then(res => {
+        if(res.user) console.log("User logged in via redirect");
+    }).catch(err => alert("Login Error: " + err.message));
 
     auth.onAuthStateChanged(user => {
         if (user) {
-            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('appSection').classList.remove('hidden');
             document.getElementById('uName').innerText = user.displayName;
-            syncData(user);
+            loadUserData(user);
             if(user.email.toLowerCase() === adminEmail.toLowerCase()) {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadAdminData();
             }
         } else {
-            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('appSection').classList.add('hidden');
         }
     });
 
-    function syncData(user) {
+    function loadUserData(user) {
         db.collection('users').doc(user.uid).onSnapshot(doc => {
             if(!doc.exists()) {
-                db.collection('users').doc(user.uid).set({ balance: 5000, email: user.email, plans: [], withdrawPending: false });
+                db.collection('users').doc(user.uid).set({ balance: 0, email: user.email });
             } else {
-                userData = doc.data();
-                document.getElementById('balanceDisplay').innerText = `₹${userData.balance.toLocaleString()}`;
-                renderPlans();
+                document.getElementById('balanceDisplay').innerText = `₹${doc.data().balance}`;
             }
-        }, err => console.log("Firestore Error:", err));
-    }
-
-    // --- Baki Functions (buyPlan, requestTx, etc.) same as before ---
-    async function buyPlan(days, rate) {
-        let amt = parseInt(document.getElementById('investAmt').value);
-        if(!userData || amt > userData.balance || amt <= 0) return alert("Paisa kam hai!");
-        let total = amt + (amt * rate);
-        let daily = Math.round(total / days);
-        let newPlan = { id: Date.now(), invested: amt, duration: days, daily: daily, installments: [] };
-        let tempDate = new Date();
-        for(let i=1; i<=days; i++) {
-            tempDate.setDate(tempDate.getDate() + 1);
-            if(tempDate.getDay() === 1) tempDate.setDate(tempDate.getDate() + 1);
-            newPlan.installments.push({ id: i, date: tempDate.toLocaleDateString('hi-IN', {day:'2-digit', month:'short'}), paid: false });
-        }
-        await db.collection('users').doc(auth.currentUser.uid).update({ balance: userData.balance - amt, plans: [newPlan, ...userData.plans] });
-    }
-
-    function renderPlans() {
-        const list = document.getElementById('planList');
-        list.innerHTML = userData.plans.length ? '' : '<p style="text-align:center; color:gray;">Koi plan nahi hai.</p>';
-        userData.plans.forEach(plan => {
-            list.innerHTML += `<div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
-                <div><b>₹${plan.invested} Plan</b><br><small style="color:#94a3b8;">Daily: ₹${plan.daily}</small></div>
-                <button class="btn" style="width:auto; padding:8px 20px; background:var(--primary);" onclick="viewPlan(${plan.id})">Chart</button>
-            </div>`;
         });
     }
 
-    function viewPlan(id) {
-        const plan = userData.plans.find(p => p.id === id);
-        document.getElementById('overlay').style.display = 'block';
-        let html = `<h2>₹${plan.invested} Plan</h2><p style="color:gray;">Daily: ₹${plan.daily}</p>`;
-        plan.installments.forEach(ins => {
-            html += `<div style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
-                <span>${ins.date}</span>
-                <span>${ins.paid ? '<b style="color:var(--success)">PAID ✅</b>' : `<button onclick="collect(${plan.id}, ${ins.id})" style="background:var(--success); border:none; color:white; padding:5px 10px; border-radius:6px;">Collect</button>`}</span>
-            </div>`;
+    async function reqTx(type) {
+        let amt = prompt(`${type} amount?`);
+        if(!amt || isNaN(amt)) return;
+        await db.collection('requests').add({
+            uid: auth.currentUser.uid,
+            email: auth.currentUser.email,
+            amount: parseInt(amt),
+            type: type,
+            status: 'pending',
+            time: Date.now()
         });
-        document.getElementById('emiTable').innerHTML = html;
-    }
-
-    async function collect(pId, iId) {
-        let p = userData.plans.find(x => x.id === pId);
-        let ins = p.installments.find(y => y.id === iId);
-        if(ins.paid) return;
-        ins.paid = true;
-        await db.collection('users').doc(auth.currentUser.uid).update({ balance: userData.balance + p.daily, plans: userData.plans });
-        viewPlan(pId);
-    }
-
-    async function requestTx(type) {
-        let amt = prompt(`${type} Amount?`);
-        if(!amt || isNaN(amt) || amt <= 0) return;
-        await db.collection('requests').add({ uid: auth.currentUser.uid, email: auth.currentUser.email, amount: parseInt(amt), type: type, status: 'pending', time: Date.now() });
-        alert("Bheja gaya!");
+        alert("Request sent!");
     }
 
     function loadAdminData() {
@@ -221,31 +158,22 @@
             let html = "";
             snap.forEach(doc => {
                 let r = doc.data();
-                html += `<div class="req-card">
-                    <p><b>${r.email}</b><br>${r.type}: ₹${r.amount}</p>
-                    <button class="btn" style="background:var(--success); padding:10px; width:48%;" onclick="processReq('${doc.id}', '${r.uid}', ${r.amount}, '${r.type}', 'approve')">Approve</button>
-                    <button class="btn" style="background:var(--danger); padding:10px; width:48%;" onclick="processReq('${doc.id}', '${r.uid}', 0, '${r.type}', 'reject')">Reject</button>
+                html += `<div style="padding:10px; border-bottom:1px solid #333;">
+                    ${r.email} - ${r.type}: ₹${r.amount}
+                    <button onclick="approve('${doc.id}', '${r.uid}', ${r.amount}, '${r.type}')">Approve</button>
                 </div>`;
             });
-            document.getElementById('adminRequests').innerHTML = html || "No pending requests.";
+            document.getElementById('adminRequests').innerHTML = html || "No requests.";
         });
     }
 
-    async function processReq(rid, uid, amt, type, action) {
-        if(action === 'approve') {
-            const userRef = db.collection('users').doc(uid);
-            const userSnap = await userRef.get();
-            const currentBal = userSnap.data().balance;
-            let newBal = (type === 'Deposit') ? (currentBal + amt) : (currentBal - amt);
-            await userRef.update({ balance: newBal, withdrawPending: false });
-            await db.collection('requests').doc(rid).update({ status: 'approved' });
-        } else {
-            await db.collection('requests').doc(rid).update({ status: 'rejected' });
-            await db.collection('users').doc(uid).update({ withdrawPending: false });
-        }
+    async function approve(rid, uid, amt, type) {
+        const userRef = db.collection('users').doc(uid);
+        const snap = await userRef.get();
+        let newBal = type === 'Deposit' ? (snap.data().balance + amt) : (snap.data().balance - amt);
+        await userRef.update({ balance: newBal });
+        await db.collection('requests').doc(rid).update({ status: 'approved' });
     }
-
-    function closeOverlay() { document.getElementById('overlay').style.display = 'none'; }
 </script>
 </body>
 </html>
