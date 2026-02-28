@@ -3,38 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SkyWallet PRO - Supabase</title>
+    <title>SkyWallet PRO</title>
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root { --bg: #0b0f19; --glass: rgba(255, 255, 255, 0.06); --primary: #4f46e5; --text: #fff; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
         .hidden { display: none !important; }
-        .container { max-width: 480px; margin: auto; padding: 15px; }
+        .container { max-width: 480px; margin: auto; padding: 20px; }
         
-        /* Login Page */
-        #loginSection { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at top right, #1e1b4b, #0b0f19); text-align: center; }
-        .card { background: var(--glass); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 350px; }
+        /* Login UI */
+        #loginSection { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at top right, #1e1b4b, #0b0f19); }
+        .card { background: var(--glass); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); width: 85%; text-align: center; }
         
-        /* Dashboard */
-        .wallet-card { background: linear-gradient(135deg, #4f46e5, #9333ea); padding: 30px; border-radius: 20px; text-align: center; margin-top: 20px; box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3); }
-        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
-        .btn-google { background: white; color: black; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-primary { background: var(--primary); color: white; }
-        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; margin-top: 15px; }
+        /* Button Styles */
+        .btn-google { 
+            background: white; color: black; padding: 15px; border-radius: 12px; border: none; 
+            width: 100%; font-weight: bold; cursor: pointer; display: flex; align-items: center; 
+            justify-content: center; gap: 10px; font-size: 1rem; transition: 0.2s;
+        }
+        .btn-google:active { transform: scale(0.98); opacity: 0.9; }
+
+        /* Dashboard UI */
+        .wallet-card { background: linear-gradient(135deg, #4f46e5, #9333ea); padding: 25px; border-radius: 20px; text-align: center; margin: 20px 0; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; margin-bottom: 15px; box-sizing: border-box; }
+        .btn-main { background: var(--primary); color: white; padding: 15px; border-radius: 12px; border: none; width: 100%; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="loginSection">
-    <h1 style="font-size: 3rem; margin: 0;">SkyWallet</h1>
-    <p style="opacity: 0.7; margin-bottom: 30px;">Apne paiso ko kaam par lagaye</p>
+    <h1 style="margin-bottom: 5px; font-size: 2.5rem;">SkyWallet</h1>
+    <p style="opacity: 0.6; margin-bottom: 30px;">Investment Made Simple</p>
     <div class="card">
-        <button class="btn btn-google" onclick="login()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_google_symbol.svg" width="20">
-            Google se Login karein
+        <button id="loginBtn" class="btn-google">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_google_symbol.svg" width="20" alt="G">
+            Google se Login Karein
         </button>
+        <p id="statusMsg" style="font-size: 0.7rem; margin-top: 15px; color: #94a3b8;"></p>
     </div>
 </div>
 
@@ -45,81 +52,82 @@
     </div>
 
     <div class="wallet-card">
-        <p style="font-size: 0.8rem; opacity: 0.8; letter-spacing: 1px;">TOTAL BALANCE</p>
-        <h1 id="balanceDisplay">₹0</h1>
+        <p style="font-size: 0.8rem; opacity: 0.8; margin: 0;">AVAILABLE BALANCE</p>
+        <h1 id="balanceDisplay" style="font-size: 2.5rem; margin: 10px 0;">₹0</h1>
     </div>
 
-    <div class="card" style="margin-top:20px; width:100%; max-width:100%;">
-        <h4 style="margin:0;">Fund Request</h4>
-        <input type="number" id="amount" placeholder="Amount ₹ daalein">
-        <button class="btn btn-primary" onclick="sendTxRequest()">Deposit / Withdraw Request</button>
+    <div class="card" style="width:100%; box-sizing: border-box;">
+        <h4 style="margin-top:0;">Deposit / Withdraw</h4>
+        <input type="number" id="amount" placeholder="Amount ₹">
+        <button class="btn-main" onclick="sendRequest()">Send Request</button>
     </div>
 </div>
 
 <script>
-    // Aapka Supabase Configuration
+    // Aapki Config Details
     const SUPABASE_URL = 'https://eccygkwacovigfescghn.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjY3lna3dhY292aWdmZXNjZ2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDQ0NzQsImV4cCI6MjA4Nzg4MDQ3NH0.OyoD5LR2bXgmi2IEHmWvcEAqM_xeewHdQM1DnsNCnOU';
-    
+
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Google Login Function
-    async function login() {
-        const { error } = await supabase.auth.signInWithOAuth({
+    // Login logic with direct event listener for mobile stability
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+        const status = document.getElementById('statusMsg');
+        status.innerText = "Connecting to Google...";
+        
+        const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin + window.location.pathname
+                // Redirect link as per your GitHub setup
+                redirectTo: 'https://khanziyam20-alt.github.io/InvestAmount/'
             }
         });
-        if (error) alert("Login Error: " + error.message);
-    }
 
-    async function logout() {
-        await supabase.auth.signOut();
-        location.reload();
-    }
+        if (error) {
+            status.innerText = "Error: " + error.message;
+            alert("Login Failed: " + error.message);
+        }
+    });
 
-    // Auth State Monitor
+    // Auth state check
     supabase.auth.onAuthStateChange(async (event, session) => {
         if (session) {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('appSection').classList.remove('hidden');
-            document.getElementById('uName').innerText = "Namaste, " + session.user.user_metadata.full_name.split(' ')[0];
-            
-            // User Profile Sync
-            checkAndCreateProfile(session.user);
+            document.getElementById('uName').innerText = "Namaste, " + session.user.user_metadata.full_name;
+            fetchUserData(session.user);
         } else {
             document.getElementById('loginSection').classList.remove('hidden');
             document.getElementById('appSection').classList.add('hidden');
         }
     });
 
-    // Profile aur Balance fetch karna
-    async function checkAndCreateProfile(user) {
+    // Fetch balance from 'profiles' table
+    async function fetchUserData(user) {
         let { data: profile, error } = await supabase
             .from('profiles')
-            .select('*')
+            .select('balance')
             .eq('id', user.id)
             .single();
 
-        if (!profile) {
-            // Naya profile banayein agar nahi hai
-            await supabase.from('profiles').insert([
-                { id: user.id, email: user.email, balance: 0 }
-            ]);
-            document.getElementById('balanceDisplay').innerText = "₹0";
-        } else {
+        if (profile) {
             document.getElementById('balanceDisplay').innerText = "₹" + profile.balance.toLocaleString();
+        } else {
+            // If profile doesn't exist, create it
+            await supabase.from('profiles').insert([{ id: user.id, email: user.email, balance: 0 }]);
         }
     }
 
-    // Transaction Request
-    async function sendTxRequest() {
+    async function sendRequest() {
         const amt = document.getElementById('amount').value;
-        if(!amt || amt <= 0) return alert("Sahi amount daalein!");
-        
-        alert("Request Admin ko bhej di gayi hai! Supabase Database mein check karein.");
+        if(!amt || amt <= 0) return alert("Please enter valid amount");
+        alert("Request sent! Admin will process ₹" + amt);
         document.getElementById('amount').value = "";
+    }
+
+    async function logout() {
+        await supabase.auth.signOut();
+        location.reload();
     }
 </script>
 </body>
