@@ -3,214 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SkyWallet PRO</title>
-
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore-compat.js"></script>
+    <title>SkyWallet PRO - Supabase</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        :root {
-            --bg: #0b0f19; --glass: rgba(255, 255, 255, .06);
-            --primary: #4f46e5; --text: #fff; --danger: #f43f5e;
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Segoe UI', Arial, sans-serif; }
+        :root { --bg: #0b0f19; --glass: rgba(255, 255, 255, 0.06); --primary: #4f46e5; --text: #fff; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; }
         .hidden { display: none !important; }
-        .container { max-width: 500px; margin: auto; padding: 15px; }
+        .container { max-width: 480px; margin: auto; padding: 15px; }
         
-        /* Login UI Fix */
-        #loginSection { 
-            height: 100vh; display: flex; justify-content: center; align-items: center; 
-            background: radial-gradient(circle at top right, #1e1b4b, #0b0f19);
-        }
-        .card { background: var(--glass); padding: 30px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); width: 100%; max-width: 350px; text-align: center; }
+        /* Login Page */
+        #loginSection { height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at top right, #1e1b4b, #0b0f19); text-align: center; }
+        .card { background: var(--glass); padding: 30px; border-radius: 25px; border: 1px solid rgba(255,255,255,0.1); width: 90%; max-width: 350px; }
         
-        .wallet { background: linear-gradient(135deg, #4f46e5, #9333ea); padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .btn { padding: 14px; border: none; border-radius: 12px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem; }
+        /* Dashboard */
+        .wallet-card { background: linear-gradient(135deg, #4f46e5, #9333ea); padding: 30px; border-radius: 20px; text-align: center; margin-top: 20px; box-shadow: 0 10px 30px rgba(79, 70, 229, 0.3); }
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
         .btn-google { background: white; color: black; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; margin-top: 10px; }
-        .admin-req { background: rgba(244, 63, 94, .1); padding: 15px; border-radius: 15px; border: 1px solid var(--danger); margin-top: 15px; }
+        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: white; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div id="loginSection">
+    <h1 style="font-size: 3rem; margin: 0;">SkyWallet</h1>
+    <p style="opacity: 0.7; margin-bottom: 30px;">Apne paiso ko kaam par lagaye</p>
     <div class="card">
-        <h1 style="margin:0; font-size: 2.5rem; background: linear-gradient(#fff, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SkyWallet</h1>
-        <p style="opacity:0.7; margin-bottom:30px;">Apne paiso ko kaam par lagaye</p>
         <button class="btn btn-google" onclick="login()">
-            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_google_symbol.svg" width="22" alt="G">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_google_symbol.svg" width="20">
             Google se Login karein
         </button>
     </div>
 </div>
 
 <div id="appSection" class="container hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 0;">
-        <h3 id="uName" style="margin:0">User</h3>
-        <button onclick="logout()" style="background:none; color:var(--danger); border:none; font-weight:bold; cursor:pointer;">Logout</button>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="uName">Loading...</h3>
+        <button onclick="logout()" style="background:none; border:none; color:#f43f5e; font-weight:bold; cursor:pointer;">Logout</button>
     </div>
 
-    <div class="wallet">
-        <p style="font-size: 0.8rem; opacity: 0.8; margin:0;">TOTAL BALANCE</p>
-        <h1 id="balanceDisplay" style="margin: 5px 0; font-size: 2.5rem;">₹0</h1>
+    <div class="wallet-card">
+        <p style="font-size: 0.8rem; opacity: 0.8; letter-spacing: 1px;">TOTAL BALANCE</p>
+        <h1 id="balanceDisplay">₹0</h1>
     </div>
 
-    <div class="card" style="margin-top:20px;">
-        <h4 style="margin:0;">Transaction Request</h4>
+    <div class="card" style="margin-top:20px; width:100%; max-width:100%;">
+        <h4 style="margin:0;">Fund Request</h4>
         <input type="number" id="amount" placeholder="Amount ₹ daalein">
-        <div style="display:flex; gap:10px;">
-            <button class="btn btn-primary" onclick="reqTx('Deposit')">Deposit</button>
-            <button class="btn btn-primary" style="background:#334155" onclick="reqTx('Withdraw')">Withdraw</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <h4 style="margin:0 0 10px;">My History</h4>
-        <div id="history" style="font-size: 0.9rem;">Loading history...</div>
-    </div>
-
-    <div id="adminPanel" class="card hidden" style="border: 1px solid var(--danger);">
-        <h4 style="color:var(--danger); margin:0;">Admin Dashboard</h4>
-        <div id="adminRequests">No pending requests.</div>
+        <button class="btn btn-primary" onclick="sendTxRequest()">Deposit / Withdraw Request</button>
     </div>
 </div>
 
 <script>
-// FIREBASE CONFIG
-const firebaseConfig = {
-    apiKey: "AIzaSyB08YgLPpftxwvlKQQ9D4dRCEn4QXk-fks",
-    authDomain: "investamount-2d60a.firebaseapp.com",
-    projectId: "investamount-2d60a",
-    storageBucket: "investamount-2d60a.firebasestorage.app",
-    messagingSenderId: "1680550862",
-    appId: "1:1680550862:web:5218a3fc4c1ba814cc599f"
-};
+    // Aapka Supabase Configuration
+    const SUPABASE_URL = 'https://eccygkwacovigfescghn.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjY3lna3dhY292aWdmZXNjZ2huIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMDQ0NzQsImV4cCI6MjA4Nzg4MDQ3NH0.OyoD5LR2bXgmi2IEHmWvcEAqM_xeewHdQM1DnsNCnOU';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
-const adminEmail = "onlinetechcenter786@gmail.com";
-
-// LOGIN - Redirect logic for mobile
-function login() {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithRedirect(provider);
-}
-
-function logout() { auth.signOut().then(() => location.reload()); }
-
-// CATCH REDIRECT RESULT
-auth.getRedirectResult().catch(err => {
-    if(err.code === 'auth/unauthorized-domain') {
-        alert("Domain issue! Firebase authorized domains check karein.");
-    }
-});
-
-// AUTH STATE OBSERVER
-auth.onAuthStateChanged(user => {
-    if (user) {
-        document.getElementById("loginSection").classList.add("hidden");
-        document.getElementById("appSection").classList.remove("hidden");
-        document.getElementById("uName").innerText = "Namaste, " + user.displayName.split(" ")[0];
-
-        const uRef = db.collection("users").doc(user.uid);
-        uRef.onSnapshot(doc => {
-            if (!doc.exists) {
-                uRef.set({ balance: 0, email: user.email });
-            } else {
-                document.getElementById("balanceDisplay").innerText = "₹" + (doc.data().balance || 0).toLocaleString();
+    // Google Login Function
+    async function login() {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.origin + window.location.pathname
             }
         });
+        if (error) alert("Login Error: " + error.message);
+    }
 
-        loadHistory(user.uid);
+    async function logout() {
+        await supabase.auth.signOut();
+        location.reload();
+    }
 
-        if (user.email.toLowerCase() === adminEmail.toLowerCase()) {
-            document.getElementById("adminPanel").classList.remove("hidden");
-            loadAdmin();
+    // Auth State Monitor
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('appSection').classList.remove('hidden');
+            document.getElementById('uName').innerText = "Namaste, " + session.user.user_metadata.full_name.split(' ')[0];
+            
+            // User Profile Sync
+            checkAndCreateProfile(session.user);
+        } else {
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('appSection').classList.add('hidden');
         }
-    } else {
-        document.getElementById("loginSection").classList.remove("hidden");
-        document.getElementById("appSection").classList.add("hidden");
-    }
-});
-
-// REQUEST TRANSACTION
-async function reqTx(type) {
-    let amt = parseInt(document.getElementById("amount").value);
-    if (!amt || amt <= 0) return alert("Valid amount daalein");
-
-    let pending = await db.collection("requests").where("uid", "==", auth.currentUser.uid).where("status", "==", "pending").get();
-    if (!pending.empty) return alert("Pehle se ek request pending hai");
-
-    await db.collection("requests").add({
-        uid: auth.currentUser.uid,
-        email: auth.currentUser.email,
-        amount: amt,
-        type: type,
-        status: "pending",
-        time: Date.now()
     });
 
-    document.getElementById("amount").value = "";
-    alert("Request bhej di gayi!");
-}
+    // Profile aur Balance fetch karna
+    async function checkAndCreateProfile(user) {
+        let { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
 
-// USER HISTORY
-function loadHistory(uid) {
-    db.collection("requests").where("uid", "==", uid).orderBy("time", "desc").onSnapshot(snap => {
-        let html = "";
-        snap.forEach(doc => {
-            let r = doc.data();
-            let color = r.status === 'approved' ? '#10b981' : (r.status === 'rejected' ? '#f43f5e' : '#94a3b8');
-            html += `<div style="padding:10px; border-bottom:1px solid rgba(255,255,255,0.05); display:flex; justify-content:space-between;">
-                <span>${r.type} ₹${r.amount}</span>
-                <span style="color:${color}; font-weight:bold;">${r.status.toUpperCase()}</span>
-            </div>`;
-        });
-        document.getElementById("history").innerHTML = html || "No history available";
-    });
-}
-
-// ADMIN PANEL LOGIC
-function loadAdmin() {
-    db.collection("requests").where("status", "==", "pending").onSnapshot(snap => {
-        let html = "";
-        snap.forEach(doc => {
-            let r = doc.data();
-            html += `<div class="admin-req">
-                <b>${r.email}</b><br>${r.type}: ₹${r.amount.toLocaleString()}<br>
-                <div style="display:flex; gap:10px; margin-top:10px;">
-                    <button class='btn btn-primary' style="margin:0" onclick="approve('${doc.id}','${r.uid}',${r.amount},'${r.type}')">Approve</button>
-                    <button class='btn btn-danger' style="margin:0" onclick="reject('${doc.id}')">Reject</button>
-                </div>
-            </div>`;
-        });
-        document.getElementById("adminRequests").innerHTML = html || "No pending requests.";
-    });
-}
-
-async function approve(id, uid, amt, type) {
-    const uRef = db.collection("users").doc(uid);
-    const doc = await uRef.get();
-    let bal = doc.data().balance || 0;
-
-    if (type === "Withdraw" && amt > bal) {
-        alert("Balance kam hai!");
-        return;
+        if (!profile) {
+            // Naya profile banayein agar nahi hai
+            await supabase.from('profiles').insert([
+                { id: user.id, email: user.email, balance: 0 }
+            ]);
+            document.getElementById('balanceDisplay').innerText = "₹0";
+        } else {
+            document.getElementById('balanceDisplay').innerText = "₹" + profile.balance.toLocaleString();
+        }
     }
 
-    let newBal = (type === "Deposit") ? bal + amt : bal - amt;
-    await uRef.update({ balance: newBal });
-    await db.collection("requests").doc(id).update({ status: "approved" });
-}
-
-async function reject(id) {
-    await db.collection("requests").doc(id).update({ status: "rejected" });
-}
+    // Transaction Request
+    async function sendTxRequest() {
+        const amt = document.getElementById('amount').value;
+        if(!amt || amt <= 0) return alert("Sahi amount daalein!");
+        
+        alert("Request Admin ko bhej di gayi hai! Supabase Database mein check karein.");
+        document.getElementById('amount').value = "";
+    }
 </script>
 </body>
 </html>
