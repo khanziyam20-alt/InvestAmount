@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SkyWallet Pro - Ultimate</title>
+    <title>SkyWallet Pro - Premium</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-auth-compat.js"></script>
@@ -11,93 +11,102 @@
 
     <style>
         :root {
-            --bg: #070b14; --glass: rgba(30, 41, 59, 0.7);
-            --primary: #3b82f6; --accent: #00f2fe; --success: #10b981;
-            --danger: #ef4444; --text: #f1f5f9;
+            --bg: #0b0f19; --glass: rgba(255, 255, 255, 0.05);
+            --primary: #4f46e5; --accent: #22d3ee; --success: #10b981;
+            --danger: #f43f5e; --text: #f8fafc;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { 
-            font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top right, #1e293b, var(--bg)); 
-            color: var(--text); margin: 0; min-height: 100vh; padding-bottom: 50px;
+            font-family: 'Inter', system-ui, sans-serif; background: var(--bg); 
+            color: var(--text); margin: 0; min-height: 100vh; overflow-x: hidden;
         }
         .hidden { display: none !important; }
-        .container { max-width: 480px; margin: auto; padding: 20px; }
 
-        /* Card Styles */
-        .glass-card { background: var(--glass); backdrop-filter: blur(12px); border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 20px; }
-        .wallet-card { background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 30px 20px; border-radius: 28px; text-align: center; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3); }
+        /* Full Screen Login Page */
+        #loginSection {
+            height: 100vh; width: 100%; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            background: radial-gradient(circle at top right, #1e1b4b, #0b0f19);
+            padding: 30px; position: fixed; top: 0; left: 0; z-index: 2000;
+        }
+        .logo-box { font-size: 3.5rem; font-weight: 900; background: linear-gradient(to bottom, #fff, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+        .tagline { font-size: 1.1rem; color: #94a3b8; margin-bottom: 40px; font-weight: 300; letter-spacing: 1px; }
+        .login-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 40px 20px; border-radius: 30px; width: 100%; max-width: 350px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
 
-        /* UI Elements */
-        input { width: 100%; padding: 14px; border-radius: 14px; background: rgba(0,0,0,0.3); border: 1px solid #334155; color: white; margin-bottom: 15px; outline: none; }
-        .btn { width: 100%; padding: 15px; border-radius: 16px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-withdraw { background: rgba(255,255,255,0.2); color: white; margin-top: 10px; }
-        
-        /* Plan Cards */
-        .plan-item { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--accent); }
-        .status-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 6px; background: var(--success); }
+        /* Dashboard UI */
+        .container { max-width: 480px; margin: auto; padding: 15px; }
+        .glass-card { background: var(--glass); backdrop-filter: blur(15px); border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 20px; }
+        .wallet-card { background: linear-gradient(135deg, #4f46e5, #9333ea); padding: 30px 20px; border-radius: 28px; text-align: center; box-shadow: 0 15px 35px rgba(79, 70, 229, 0.4); }
 
-        /* Admin Section */
-        .admin-box { border: 2px solid var(--danger); }
-        .req-card { background: #1e293b; padding: 15px; border-radius: 12px; margin-top: 10px; border: 1px solid #ef4444; }
+        /* Inputs & Buttons */
+        input { width: 100%; padding: 15px; border-radius: 15px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); color: white; margin-bottom: 15px; font-size: 1rem; }
+        .btn { width: 100%; padding: 16px; border-radius: 18px; border: none; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 1rem; }
+        .btn-google { background: white; color: #000; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3); }
+        .btn:active { transform: scale(0.96); }
+
+        /* Admin Layout */
+        .admin-title { color: var(--danger); font-weight: 800; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px; display: block; }
+        .req-card { background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.2); padding: 15px; border-radius: 18px; margin-top: 10px; }
 
         /* Overlay */
-        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 1000; padding: 20px; display:none; overflow-y: auto;}
+        #overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 1500; padding: 20px; display:none; overflow-y: auto; }
     </style>
 </head>
 <body>
 
-<div id="loginSection" class="container" style="text-align:center; padding-top: 100px;">
-    <h1 style="font-size: 2.5rem; margin-bottom: 10px;">SkyWallet</h1>
-    <p style="color:var(--accent)">Advanced Investment Platform</p>
-    <div class="glass-card" style="margin-top: 50px;">
-        <button class="btn btn-primary" onclick="login()">Login with Google</button>
+<div id="loginSection">
+    <div class="logo-box">SkyWallet</div>
+    <div class="tagline">Apne paiso ko kaam par lagaye</div>
+    <div class="login-card">
+        <p style="margin-bottom:25px; font-size: 0.9rem; opacity: 0.7;">Surakshit investment ki shuruat karein</p>
+        <button class="btn btn-google" onclick="login()">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/pwa_google_symbol.svg" width="20">
+            Google se Login karein
+        </button>
     </div>
 </div>
 
 <div id="appSection" class="container hidden">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-        <span id="uName">User</span>
-        <button onclick="logout()" style="background:none; border:none; color:var(--danger); cursor:pointer;">Logout</button>
+    <div style="display:flex; justify-content:space-between; align-items:center; padding: 10px 5px 20px;">
+        <span id="uName" style="font-weight: 700; font-size: 1.1rem;">User</span>
+        <button onclick="logout()" style="background:rgba(244,63,94,0.1); border:none; color:var(--danger); padding:8px 15px; border-radius:10px; font-weight:bold;">Logout</button>
     </div>
 
     <div class="wallet-card">
-        <p style="font-size:0.8rem; opacity:0.8; letter-spacing:1px;">TOTAL BALANCE</p>
-        <h1 id="balanceDisplay" style="font-size:2.8rem; margin:10px 0;">₹0</h1>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <button class="btn btn-withdraw" onclick="requestTx('Deposit')">Deposit</button>
-            <button class="btn btn-withdraw" onclick="requestTx('Withdraw')">Withdraw</button>
+        <p style="font-size:0.75rem; opacity:0.8; letter-spacing:2px; font-weight:600;">AVAILABLE BALANCE</p>
+        <h1 id="balanceDisplay" style="font-size:3rem; margin:10px 0; font-weight:900;">₹0</h1>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:20px;">
+            <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:12px;" onclick="requestTx('Deposit')">Deposit</button>
+            <button class="btn" style="background:rgba(255,255,255,0.2); color:white; padding:12px;" onclick="requestTx('Withdraw')">Withdraw</button>
         </div>
     </div>
 
-    <div class="glass-card" style="margin-top:20px;">
-        <label style="font-size:0.8rem; color:gray">Investment Amount (₹)</label>
+    <div class="glass-card" style="margin-top:25px;">
+        <label style="font-size:0.75rem; color:#94a3b8; margin-bottom:8px; display:block;">INVESTMENT AMOUNT (₹)</label>
         <input type="number" id="investAmt" value="1000">
-        <label style="font-size:0.8rem; color:gray">Start Date</label>
-        <input type="date" id="startDate">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-            <button class="btn btn-primary" onclick="buyPlan(6, 0.2)">6 Days<br><small>+20% Return</small></button>
-            <button class="btn btn-primary" onclick="buyPlan(30, 0.5)" style="background:#8b5cf6">30 Days<br><small>+50% Return</small></button>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <button class="btn btn-primary" onclick="buyPlan(6, 0.2)">6 Din Plan<br><small style="font-weight:400; opacity:0.8;">+20% Profit</small></button>
+            <button class="btn btn-primary" onclick="buyPlan(30, 0.5)" style="background:#7c3aed">30 Din Plan<br><small style="font-weight:400; opacity:0.8;">+50% Profit</small></button>
         </div>
     </div>
 
-    <h3>Active Portfolio</h3>
+    <h3 style="margin: 25px 5px 15px; font-size: 1.2rem;">Active Portfolio</h3>
     <div id="planList"></div>
 
-    <div id="adminPanel" class="glass-card admin-box hidden">
-        <h3 style="color:var(--danger); margin-top:0;">ADMIN DASHBOARD</h3>
-        <div id="adminRequests">No pending requests</div>
+    <div id="adminPanel" class="glass-card hidden" style="border: 1px solid rgba(244, 63, 94, 0.3);">
+        <span class="admin-title">Admin Dashboard</span>
+        <div id="adminRequests" style="font-size:0.9rem; color:#94a3b8;">No pending requests.</div>
     </div>
 </div>
 
 <div id="overlay">
-    <button class="btn btn-withdraw" style="width:auto; margin-bottom:20px;" onclick="closeOverlay()">← Back</button>
-    <h2 id="viewPlanTitle">Plan Details</h2>
+    <button class="btn" style="width:auto; margin-bottom:20px; background:#1e293b; color:white;" onclick="closeOverlay()">← Dashboard</button>
     <div id="emiTable"></div>
 </div>
 
 <script>
-    // --- FIREBASE CONFIGURATION ---
+    // --- FIREBASE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyB08YgLPpftxwvlKQQ9D4dRCEn4QXk-fks",
         authDomain: "investamount-2d60a.firebaseapp.com",
@@ -110,44 +119,36 @@
 
     const adminEmail = "onlinetechcenter786@gmail.com";
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
     let userData = null;
-    document.getElementById('startDate').valueAsDate = new Date();
 
-    // --- AUTH FUNCTIONS ---
+    // --- LOGIN FIX FOR MOBILE ---
     function login() {
         const provider = new firebase.auth.GoogleAuthProvider();
-        auth.signInWithPopup(provider);
+        auth.signInWithRedirect(provider); // Redirect is better for mobile
     }
-    function logout() { auth.signOut(); location.reload(); }
+    function logout() { auth.signOut().then(() => location.reload()); }
 
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('appSection').classList.remove('hidden');
-            document.getElementById('uName').innerText = "Namaste, " + user.displayName.split(' ')[0];
+            document.getElementById('uName').innerText = user.displayName;
             syncData(user);
-            if(user.email === adminEmail) {
+            if(user.email.toLowerCase() === adminEmail.toLowerCase()) {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 loadAdminData();
             }
         }
     });
 
-    // --- USER DATA SYNC ---
     function syncData(user) {
         db.collection('users').doc(user.uid).onSnapshot(doc => {
             if(!doc.exists()) {
-                db.collection('users').doc(user.uid).set({
-                    balance: 5000,
-                    email: user.email,
-                    plans: [],
-                    withdrawPending: false
-                });
+                db.collection('users').doc(user.uid).set({ balance: 5000, email: user.email, plans: [], withdrawPending: false });
             } else {
                 userData = doc.data();
                 document.getElementById('balanceDisplay').innerText = `₹${userData.balance.toLocaleString()}`;
@@ -156,138 +157,104 @@
         });
     }
 
-    // --- INVESTMENT LOGIC ---
+    // --- PLAN LOGIC ---
     async function buyPlan(days, rate) {
         let amt = parseInt(document.getElementById('investAmt').value);
-        if(amt > userData.balance) return alert("Paisa kam hai!");
+        if(amt > userData.balance || amt <= 0) return alert("Paisa kam hai ya galat amount hai!");
         
-        let start = new Date(document.getElementById('startDate').value);
-        let daily = Math.round((amt + (amt * rate)) / days);
+        let start = new Date();
+        let total = amt + (amt * rate);
+        let daily = Math.round(total / days);
         
-        let newPlan = {
-            id: Date.now(),
-            invested: amt,
-            duration: days,
-            daily: daily,
-            installments: []
-        };
-
+        let newPlan = { id: Date.now(), invested: amt, duration: days, daily: daily, installments: [] };
         let tempDate = new Date(start);
         for(let i=1; i<=days; i++) {
-            if(tempDate.getDay() === 1) tempDate.setDate(tempDate.getDate() + 1); // Mon Off
-            newPlan.installments.push({
-                id: i,
-                date: new Date(tempDate).toLocaleDateString('hi-IN', {day:'2-digit', month:'short'}),
-                dayName: tempDate.toLocaleDateString('en-GB', {weekday:'short'}),
-                paid: false
-            });
             tempDate.setDate(tempDate.getDate() + 1);
+            if(tempDate.getDay() === 1) tempDate.setDate(tempDate.getDate() + 1);
+            newPlan.installments.push({ id: i, date: tempDate.toLocaleDateString('hi-IN', {day:'2-digit', month:'short'}), paid: false });
         }
 
-        let updatedPlans = [newPlan, ...userData.plans];
         await db.collection('users').doc(auth.currentUser.uid).update({
             balance: userData.balance - amt,
-            plans: updatedPlans
+            plans: [newPlan, ...userData.plans]
         });
     }
 
     function renderPlans() {
         const list = document.getElementById('planList');
-        list.innerHTML = '';
+        list.innerHTML = userData.plans.length ? '' : '<p style="text-align:center; color:gray;">Koi active plan nahi hai.</p>';
         userData.plans.forEach(plan => {
-            list.innerHTML += `
-                <div class="plan-item">
-                    <div>
-                        <b>₹${plan.invested} Plan</b><br>
-                        <small style="color:gray">${plan.duration} Days Daily</small>
-                    </div>
-                    <button class="btn btn-primary" style="width:auto; padding:8px 15px;" onclick="viewPlan(${plan.id})">View</button>
-                </div>`;
+            list.innerHTML += `<div class="glass-card" style="display:flex; justify-content:space-between; align-items:center; padding:15px;">
+                <div><b>₹${plan.invested} Plan</b><br><small style="color:#94a3b8;">Daily: ₹${plan.daily}</small></div>
+                <button class="btn" style="width:auto; padding:8px 20px; background:var(--primary);" onclick="viewPlan(${plan.id})">Chart</button>
+            </div>`;
         });
     }
 
     function viewPlan(id) {
         const plan = userData.plans.find(p => p.id === id);
         document.getElementById('overlay').style.display = 'block';
-        let html = `<h3>Daily Return: ₹${plan.daily}</h3><table style="width:100%; text-align:left;">`;
+        let html = `<h2 style="margin-bottom:5px;">₹${plan.invested} Plan</h2><p style="margin-bottom:20px; color:gray;">Daily Return: ₹${plan.daily}</p>`;
         plan.installments.forEach(ins => {
-            html += `
-            <tr style="border-bottom:1px solid #333">
-                <td style="padding:10px">${ins.date} (${ins.dayName})</td>
-                <td>₹${plan.daily}</td>
-                <td>${ins.paid ? '✅' : `<button onclick="collect(${plan.id}, ${ins.id})">Collect</button>`}</td>
-            </tr>`;
+            html += `<div style="display:flex; justify-content:space-between; background:rgba(255,255,255,0.03); padding:15px; border-radius:12px; margin-bottom:8px; border:1px solid rgba(255,255,255,0.05);">
+                <span>${ins.date}</span>
+                <span>${ins.paid ? '<b style="color:var(--success)">PAID ✅</b>' : `<button onclick="collect(${plan.id}, ${ins.id})" style="background:var(--success); border:none; color:white; padding:5px 10px; border-radius:6px; font-weight:bold;">Collect</button>`}</span>
+            </div>`;
         });
-        document.getElementById('emiTable').innerHTML = html + "</table>";
+        document.getElementById('emiTable').innerHTML = html;
     }
 
     async function collect(pId, iId) {
-        let plans = [...userData.plans];
-        let p = plans.find(x => x.id === pId);
-        let i = p.installments.find(y => y.id === iId);
-        if(i.paid) return;
-        i.paid = true;
-        await db.collection('users').doc(auth.currentUser.uid).update({
-            balance: userData.balance + p.daily,
-            plans: plans
-        });
+        let p = userData.plans.find(x => x.id === pId);
+        let ins = p.installments.find(y => y.id === iId);
+        if(ins.paid) return;
+        ins.paid = true;
+        await db.collection('users').doc(auth.currentUser.uid).update({ balance: userData.balance + p.daily, plans: userData.plans });
         viewPlan(pId);
     }
 
-    // --- REQUESTS (DEPOSIT/WITHDRAW) ---
+    // --- REQUESTS ---
     async function requestTx(type) {
-        if(type === 'Withdraw' && userData.withdrawPending) return alert("Ek request pehle se pending hai!");
-        let amt = prompt(`${type} Amount?`);
-        if(!amt || amt <= 0) return;
-
-        await db.collection('requests').add({
-            uid: auth.currentUser.uid,
-            email: auth.currentUser.email,
-            amount: parseInt(amt),
-            type: type,
-            status: 'pending',
-            time: Date.now()
-        });
-
-        if(type === 'Withdraw') {
-            await db.collection('users').doc(auth.currentUser.uid).update({ withdrawPending: true });
-        }
-        alert("Request Sent to Admin!");
+        if(type === 'Withdraw' && userData.withdrawPending) return alert("Pichla withdraw pending hai!");
+        let amt = prompt(`${type} Amount daalein:`);
+        if(!amt || isNaN(amt) || amt <= 0) return;
+        
+        await db.collection('requests').add({ uid: auth.currentUser.uid, email: auth.currentUser.email, amount: parseInt(amt), type: type, status: 'pending', time: Date.now() });
+        if(type === 'Withdraw') await db.collection('users').doc(auth.currentUser.uid).update({ withdrawPending: true });
+        alert("Request bhej di gayi hai!");
     }
 
-    // --- ADMIN LOGIC ---
+    // --- ADMIN LOGIC (FIXED) ---
     function loadAdminData() {
         db.collection('requests').where('status', '==', 'pending').onSnapshot(snap => {
             let html = "";
             snap.forEach(doc => {
                 let r = doc.data();
                 html += `<div class="req-card">
-                    <p>${r.email}<br><b>${r.type}: ₹${r.amount}</b></p>
-                    <button class="btn btn-primary" style="width:45%; background:var(--success)" onclick="approve('${doc.id}', '${r.uid}', ${r.amount}, '${r.type}')">Approve</button>
-                    <button class="btn btn-primary" style="width:45%; background:var(--danger)" onclick="reject('${doc.id}', '${r.uid}')">Reject</button>
+                    <p style="margin:0 0 10px;"><b>${r.email}</b><br>${r.type}: ₹${r.amount}</p>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn" style="background:var(--success); padding:10px; font-size:0.8rem;" onclick="processReq('${doc.id}', '${r.uid}', ${r.amount}, '${r.type}', 'approve')">Approve</button>
+                        <button class="btn" style="background:var(--danger); padding:10px; font-size:0.8rem;" onclick="processReq('${doc.id}', '${r.uid}', 0, '${r.type}', 'reject')">Reject</button>
+                    </div>
                 </div>`;
             });
             document.getElementById('adminRequests').innerHTML = html || "No pending requests.";
         });
     }
 
-    async function approve(rid, uid, amt, type) {
-        if(type === 'Deposit') {
-            await db.collection('users').doc(uid).update({
-                balance: firebase.firestore.FieldValue.increment(amt)
-            });
+    async function processReq(rid, uid, amt, type, action) {
+        if(action === 'approve') {
+            const userRef = db.collection('users').doc(uid);
+            const userSnap = await userRef.get();
+            const currentBal = userSnap.data().balance;
+            
+            let newBal = (type === 'Deposit') ? (currentBal + amt) : (currentBal - amt);
+            await userRef.update({ balance: newBal, withdrawPending: false });
+            await db.collection('requests').doc(rid).update({ status: 'approved' });
         } else {
-            await db.collection('users').doc(uid).update({
-                balance: firebase.firestore.FieldValue.increment(-amt),
-                withdrawPending: false
-            });
+            await db.collection('requests').doc(rid).update({ status: 'rejected' });
+            await db.collection('users').doc(uid).update({ withdrawPending: false });
         }
-        await db.collection('requests').doc(rid).update({ status: 'approved' });
-    }
-
-    async function reject(rid, uid) {
-        await db.collection('requests').doc(rid).update({ status: 'rejected' });
-        await db.collection('users').doc(uid).update({ withdrawPending: false });
     }
 
     function closeOverlay() { document.getElementById('overlay').style.display = 'none'; }
